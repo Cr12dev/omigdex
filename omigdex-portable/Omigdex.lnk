@@ -1,0 +1,3 @@
+@echo off
+cd /d "D:\omigdex\omigdex-app\"
+start "" "omigdex-app.exe"

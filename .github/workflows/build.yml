@@ -1,0 +1,81 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Build frontend
+        run: pnpm build
+      
+      - name: Build Tauri app
+        run: pnpm tauri build
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: omigdex-installer
+          path: src-tauri/target/release/bundle/nsis/*.exe
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/target/release/bundle/nsis/*.exe
+          draft: false
+          prerelease: false
+          body: |
+            ## Omigdex - Video Downloader
+            
+            Open source video downloader for YouTube, Instagram, TikTok, and Pinterest.
+            
+            ### Features
+            - Download videos in MP4 and MP3 formats
+            - Quality selection (Best, High, Medium, Low)
+            - Download queue with up to 3 concurrent downloads
+            - Download history
+            - Dark/Light theme
+            - Toast notifications for user feedback
+            - Minimalist UI without emojis
+            - Includes yt-dlp automatically
+            
+            ### Installation
+            Download and run the installer. No additional dependencies required.
+            
+            ### Source Code
+            This is an open source project. You can verify the source code at:
+            https://github.com/[your-username]/omigdex-app
+            
+            ### Security
+            This build was automatically created from the source code on GitHub.
+            You can verify the integrity of the download by checking the source code.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
