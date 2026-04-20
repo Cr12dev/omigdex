@@ -162,8 +162,16 @@ impl Downloader {
             .arg(quality_arg)
             .arg("-o")
             .arg(&output_template)
-            .arg("--newline")
-            .arg(&request.url);
+            .arg("--newline");
+
+        // Add GPU acceleration if enabled and format is MP4 (video)
+        if request.gpu_acceleration && request.format == VideoFormat::Mp4 {
+            if let Some(gpu_args) = self.get_gpu_acceleration_args() {
+                cmd.arg("--postprocessor-args").arg(&gpu_args);
+            }
+        }
+
+        cmd.arg(&request.url);
 
         let mut child = cmd
             .stdout(Stdio::piped())
@@ -231,5 +239,113 @@ impl Downloader {
 
     fn is_valid_url(&self, url: &str) -> bool {
         url.starts_with("http://") || url.starts_with("https://")
+    }
+
+    fn get_gpu_acceleration_args(&self) -> Option<String> {
+        // Try to detect available GPU and return appropriate FFmpeg arguments
+        // NVIDIA (NVENC)
+        if self.check_nvidia_gpu() {
+            return Some("ffmpeg:-c:v h264_nvenc -preset fast".to_string());
+        }
+
+        // AMD (AMF)
+        if self.check_amd_gpu() {
+            return Some("ffmpeg:-c:v h264_amf -preset speed".to_string());
+        }
+
+        // Intel (Quick Sync)
+        if self.check_intel_gpu() {
+            return Some("ffmpeg:-c:v h264_qsv -preset faster".to_string());
+        }
+
+        // macOS (VideoToolbox)
+        if cfg!(target_os = "macos") {
+            return Some("ffmpeg:-c:v h264_videotoolbox".to_string());
+        }
+
+        None
+    }
+
+    fn check_nvidia_gpu(&self) -> bool {
+        // Check for NVIDIA GPU by trying to run nvidia-smi
+        #[cfg(target_os = "windows")]
+        {
+            let result = Command::new("nvidia-smi")
+                .arg("--query-gpu=name")
+                .arg("--format=csv,noheader")
+                .output();
+            result.is_ok() && result.unwrap().status.success()
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let result = Command::new("nvidia-smi")
+                .arg("--query-gpu=name")
+                .arg("--format=csv,noheader")
+                .output();
+            result.is_ok() && result.unwrap().status.success()
+        }
+    }
+
+    fn check_amd_gpu(&self) -> bool {
+        // Check for AMD GPU by looking for AMD/ATI in lspci (Linux) or similar
+        #[cfg(target_os = "windows")]
+        {
+            // On Windows, check if AMD GPU is present via wmic or similar
+            let result = Command::new("wmic")
+                .args(&["path", "win32_VideoController", "get", "name"])
+                .output();
+            if let Ok(result) = result {
+                let output = String::from_utf8_lossy(&result.stdout);
+                output.to_lowercase().contains("amd") || output.to_lowercase().contains("radeon")
+            } else {
+                false
+            }
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let result = Command::new("lspci")
+                .arg("-nnk")
+                .output();
+            if result.is_ok() {
+                let output = String::from_utf8_lossy(&result.unwrap().stdout);
+                output.to_lowercase().contains("amd") || output.to_lowercase().contains("radeon") ||
+                output.to_lowercase().contains("ati")
+            } else {
+                false
+            }
+        }
+    }
+
+    fn check_intel_gpu(&self) -> bool {
+        // Check for Intel GPU
+        #[cfg(target_os = "windows")]
+        {
+            let result = Command::new("wmic")
+                .args(&["path", "win32_VideoController", "get", "name"])
+                .output();
+            if let Ok(result) = result {
+                let output = String::from_utf8_lossy(&result.stdout);
+                output.to_lowercase().contains("intel") && 
+                (output.to_lowercase().contains("graphics") || output.to_lowercase().contains("iris") || output.to_lowercase().contains("arc"))
+            } else {
+                false
+            }
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let result = Command::new("lspci")
+                .arg("-nnk")
+                .output();
+            if result.is_ok() {
+                let output = String::from_utf8_lossy(&result.unwrap().stdout);
+                output.to_lowercase().contains("intel") && 
+                (output.to_lowercase().contains("graphics") || output.to_lowercase().contains("iris") || output.to_lowercase().contains("arc"))
+            } else {
+                false
+            }
+        }
     }
 }

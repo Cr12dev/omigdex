@@ -57,12 +57,12 @@ function AppContent() {
     }
   };
 
-  const handleDownloadStart = async (url: string, format: string, quality: string) => {
+  const handleDownloadStart = async (url: string, format: string, quality: string, gpuAcceleration: boolean) => {
     try {
       showToast('Starting download...', 'info');
-      
-      const id = await invoke<string>('download_video', { url, format, quality });
-      
+
+      const id = await invoke<string>('download_video', { url, format, quality, gpuAcceleration });
+
       const videoInfo = await invoke<[string, string]>('get_video_info', { url });
       const newDownload: DownloadInfo = {
         id,
@@ -76,7 +76,7 @@ function AppContent() {
         file_path: null,
         created_at: new Date().toISOString(),
       };
-      
+
       setDownloads(prev => [...prev, newDownload]);
       showToast(`Download started: ${videoInfo[0]}`, 'success');
     } catch (error) {
@@ -158,6 +158,7 @@ function AppContent() {
           <div className="flex justify-center items-center py-4">
             <Button variant="outline"><a href="https://github.com/Cr12dev/omigdex" target="_blank">Github</a></Button>
           </div>
+          
         </div>
       </main>
     </div>

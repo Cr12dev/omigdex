@@ -53,7 +53,7 @@ impl DownloadQueue {
 
     pub fn get_status(&self) -> QueueStatus {
         let queue = self.queue.lock().unwrap();
-        let active = self.active_downloads.lock().unwrap();
+        let _active = self.active_downloads.lock().unwrap();
         
         let active_count = queue.iter()
             .filter(|d| d.status == DownloadStatus::Downloading)
@@ -151,6 +151,7 @@ impl DownloadQueue {
                     url: d.url.clone(),
                     format: d.format.clone(),
                     quality: d.quality.clone(),
+                    gpu_acceleration: false,
                 })
             };
 
