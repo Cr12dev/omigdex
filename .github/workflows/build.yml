@@ -4,7 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - snapshot-*
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag version'
+        required: true
 
 permissions:
   contents: write
@@ -16,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
