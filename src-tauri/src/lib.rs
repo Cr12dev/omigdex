@@ -3,7 +3,7 @@ mod queue;
 mod history;
 mod types;
 
-use downloader::{Downloader, DownloadError};
+use downloader::Downloader;
 use queue::DownloadQueue;
 use history::DownloadHistory;
 use types::{DownloadRequest, DownloadInfo, QueueStatus, VideoFormat, VideoQuality};

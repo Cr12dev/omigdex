@@ -295,8 +295,8 @@ impl Downloader {
             let result = Command::new("wmic")
                 .args(&["path", "win32_VideoController", "get", "name"])
                 .output();
-            if result.is_ok() {
-                let output = String::from_utf8_lossy(&result.unwrap().stdout);
+            if let Ok(result) = result {
+                let output = String::from_utf8_lossy(&result.stdout);
                 output.to_lowercase().contains("amd") || output.to_lowercase().contains("radeon")
             } else {
                 false
@@ -325,8 +325,8 @@ impl Downloader {
             let result = Command::new("wmic")
                 .args(&["path", "win32_VideoController", "get", "name"])
                 .output();
-            if result.is_ok() {
-                let output = String::from_utf8_lossy(&result.unwrap().stdout);
+            if let Ok(result) = result {
+                let output = String::from_utf8_lossy(&result.stdout);
                 output.to_lowercase().contains("intel") && 
                 (output.to_lowercase().contains("graphics") || output.to_lowercase().contains("iris") || output.to_lowercase().contains("arc"))
             } else {
