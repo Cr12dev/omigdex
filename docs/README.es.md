@@ -14,6 +14,7 @@ Una aplicación de descarga de videos de código abierto construida con Tauri, R
 - **Interfaz minimalista**: Diseño limpio y moderno sin emojis
 - **Versión portable**: Ejecuta sin instalación (incluye yt-dlp)
 - **Descargas rápidas**: Optimizado para velocidad (video de 15 minutos en ~10 segundos)
+- **Sistema de plugins Lua**: Extiende la funcionalidad con plugins personalizados
 
 ## Stack Tecnológico
 

@@ -2,10 +2,12 @@ mod downloader;
 mod queue;
 mod history;
 mod types;
+mod plugins;
 
 use downloader::Downloader;
 use queue::DownloadQueue;
 use history::DownloadHistory;
+use plugins::PluginManager;
 use types::{DownloadRequest, DownloadInfo, QueueStatus, VideoFormat, VideoQuality};
 use std::sync::{Arc, Mutex};
 
@@ -119,17 +121,54 @@ fn clear_history(state: tauri::State<'_, Arc<Mutex<DownloadHistory>>>) -> Result
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn get_plugins(state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Vec<String> {
+    let pm = state.lock().unwrap();
+    pm.get_plugin_list()
+}
+
+#[tauri::command]
+fn reload_plugins(state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Result<(), String> {
+    let pm = state.lock().unwrap();
+    pm.load_plugins().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn enable_plugin(name: String, state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Result<(), String> {
+    let pm = state.lock().unwrap();
+    pm.enable_plugin(&name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn disable_plugin(name: String, state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Result<(), String> {
+    let pm = state.lock().unwrap();
+    pm.disable_plugin(&name).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let queue = Arc::new(Mutex::new(DownloadQueue::new("./downloads".to_string(), 3)));
     let history = Arc::new(Mutex::new(
         DownloadHistory::new("./history.json".into()).expect("Failed to initialize history")
     ));
+    let downloader = Arc::new(Mutex::new(Downloader::new("./downloads".to_string())));
+    let plugin_manager = Arc::new(Mutex::new(
+        PluginManager::new(
+            downloader.clone(),
+            queue.clone(),
+            history.clone(),
+            "./plugins".into()
+        )
+    ));
+
+    // Load plugins on startup
+    plugin_manager.lock().unwrap().load_plugins().expect("Failed to load plugins");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(queue)
         .manage(history)
+        .manage(plugin_manager)
         .invoke_handler(tauri::generate_handler![
             check_yt_dlp,
             get_video_info,
@@ -142,7 +181,11 @@ pub fn run() {
             get_history,
             add_to_history,
             remove_from_history,
-            clear_history
+            clear_history,
+            get_plugins,
+            reload_plugins,
+            enable_plugin,
+            disable_plugin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

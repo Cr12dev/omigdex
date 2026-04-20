@@ -31,6 +31,7 @@ An open-source video downloader application built with Tauri, React, TypeScript,
 - **Minimalist UI**: Clean and modern interface without emojis
 - **Portable version**: Run without installation (includes yt-dlp)
 - **Fast downloads**: Optimized for speed (15-minute video in ~10 seconds)
+- **Lua plugin system**: Extend functionality with custom plugins
 
 ## Tech Stack
 

@@ -55,8 +55,10 @@ jobs:
           mkdir portable
           mkdir portable/downloads
           mkdir portable/resources
+          mkdir portable/plugins
           copy src-tauri\target\release\omigdex-app.exe portable\
           xcopy dist portable\dist\ /E /I /Y
+          xcopy plugins portable\plugins\ /E /I /Y
           powershell -Command "Invoke-WebRequest -Uri 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe' -OutFile 'portable\yt-dlp.exe'"
           Compress-Archive -Path portable\* -DestinationPath omigdex-portable.zip
       
@@ -83,9 +85,9 @@ jobs:
           prerelease: false
           body: |
             ## Omigdex - Video Downloader
-            
+
             Open source video downloader for YouTube, Instagram, TikTok, and Pinterest.
-            
+
             ### Features
             - Download videos in MP4 and MP3 formats
             - Quality selection (Best, High, Medium, Low)
@@ -95,14 +97,20 @@ jobs:
             - Toast notifications for user feedback
             - Minimalist UI without emojis
             - Includes yt-dlp automatically
-            
+            - Lua plugin system for extensibility
+
+            ### Plugins
+            - Extend functionality with Lua plugins
+            - Place plugins in the `plugins` folder
+            - See documentation for plugin development guide
+
             ### Installation
             Download and run the installer. No additional dependencies required.
-            
+
             ### Source Code
             This is an open source project. You can verify the source code at:
             https://github.com/Cr12dev/omigdex
-            
+
             ### Security
             This build was automatically created from the source code on GitHub.
             You can verify the integrity of the download by checking the source code.

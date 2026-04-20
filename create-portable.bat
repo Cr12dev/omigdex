@@ -19,6 +19,7 @@ if exist "%PORTABLE_DIR%" rmdir /s /q "%PORTABLE_DIR%"
 mkdir "%PORTABLE_DIR%"
 mkdir "%PORTABLE_DIR%\downloads"
 mkdir "%PORTABLE_DIR%\resources"
+mkdir "%PORTABLE_DIR%\plugins"
 
 echo Step 3: Copying application executable...
 copy "%SOURCE_DIR%\%EXE_NAME%" "%PORTABLE_DIR%\" >nul
@@ -31,6 +32,9 @@ if errorlevel 1 (
 
 echo Step 4: Copying frontend assets...
 xcopy "%~dp0dist" "%PORTABLE_DIR%\dist\" /E /I /Y >nul
+
+echo Step 4.5: Copying plugins...
+xcopy "%~dp0plugins" "%PORTABLE_DIR%\plugins\" /E /I /Y >nul
 
 echo Step 5: Downloading yt-dlp...
 powershell -Command "Invoke-WebRequest -Uri 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe' -OutFile '%PORTABLE_DIR%\yt-dlp.exe'"
@@ -55,6 +59,7 @@ echo - Download history
 echo - Dark/Light theme
 echo - Minimalist UI without emojis
 echo - Toast notifications for feedback
+echo - Lua plugin system for extensibility
 echo.
 echo Requirements:
 echo - yt-dlp is included in this package
@@ -66,6 +71,10 @@ echo 2. Paste a video URL and click Download
 echo 3. Select format (MP4/MP3) and quality
 echo 4. Monitor downloads in the Queue tab
 echo 5. View download history in the History tab
+echo.
+echo Plugins:
+echo - Lua plugins can be placed in the 'plugins' folder
+echo - See docs/PLUGIN_DEVELOPMENT.md for plugin development guide
 echo.
 echo Downloads are saved in the 'downloads' folder.
 echo.
