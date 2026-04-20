@@ -168,7 +168,7 @@ Bidrag er velkomne! Ikke nøl med å sende en Pull Request.
 
 ## Lisens
 
-Dette prosjektet er åpen kildekode og er tilgjengelig under MIT-lisensen.
+Dette prosjektet er åpen kildekode og er tilgjengelig under GPL-3.0-lisensen.
 
 ## Anerkjennelser
 

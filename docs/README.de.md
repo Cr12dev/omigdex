@@ -168,7 +168,7 @@ Beiträge sind willkommen! Zögern Sie nicht, einen Pull Request zu senden.
 
 ## Lizenz
 
-Dieses Projekt ist Open Source und unter der MIT-Lizenz verfügbar.
+Dieses Projekt ist Open Source und unter der GPL-3.0-Lizenz verfügbar.
 
 ## Danksagungen
 

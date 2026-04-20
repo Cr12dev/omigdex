@@ -168,7 +168,7 @@ Katkılar hoş geldir! Çekme isteği göndermekten çekinmeyin.
 
 ## Lisans
 
-Bu proje açık kaynaklıdır ve MIT lisansı altında kullanılabilir.
+Bu proje açık kaynaklıdır ve GPL-3.0 lisansı altında kullanılabilir.
 
 ## Teşekkürler
 

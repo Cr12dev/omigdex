@@ -168,7 +168,7 @@ El workflow crea:
 
 ## Licencia
 
-Este proyecto es de código abierto y está disponible bajo la Licencia MIT.
+Este proyecto es de código abierto y está disponible bajo la Licencia GPL-3.0.
 
 ## Agradecimientos
 
