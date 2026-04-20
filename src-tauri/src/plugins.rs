@@ -2,7 +2,6 @@ use mlua::{Lua, Function};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use crate::types::DownloadInfo;
 use crate::downloader::Downloader;
 use crate::queue::DownloadQueue;
 use crate::history::DownloadHistory;
@@ -144,7 +143,7 @@ impl PluginManager {
 
         // Download functions
         let downloader = Arc::clone(&self.downloader);
-        omigdex.set("get_video_info", lua.create_function(move |_, url: String| {
+        omigdex.set("get_video_info", lua.create_function(move |lua, url: String| {
             let dl = downloader.lock().unwrap();
             match dl.get_video_info(&url) {
                 Ok((title, platform)) => {
@@ -159,7 +158,7 @@ impl PluginManager {
 
         // Queue functions
         let queue = Arc::clone(&self.queue);
-        omigdex.set("get_queue_status", lua.create_function(move |_, ()| {
+        omigdex.set("get_queue_status", lua.create_function(move |lua, ()| {
             let q = queue.lock().unwrap();
             let status = q.get_status();
             let result = lua.create_table()?;
@@ -171,7 +170,7 @@ impl PluginManager {
 
         // History functions
         let history = Arc::clone(&self.history);
-        omigdex.set("get_history", lua.create_function(move |_, ()| {
+        omigdex.set("get_history", lua.create_function(move |lua, ()| {
             let h = history.lock().unwrap();
             let downloads = h.get_all();
             let result = lua.create_table()?;
