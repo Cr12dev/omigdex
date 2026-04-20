@@ -35,26 +35,26 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownloadStart }) =
   };
 
   return (
-    <form onSubmit={handleSubmit} className="download-form">
-      <div className="form-group">
+    <form onSubmit={handleSubmit} className="mb-8">
+      <div className="mb-4">
         <input
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Paste video URL (YouTube, Instagram, TikTok, Pinterest)"
-          className="url-input"
+          className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-base font-inherit transition-colors focus:outline-none focus:border-black dark:focus:border-white placeholder-gray-400"
           disabled={isLoading}
         />
       </div>
       
-      <div className="form-row">
-        <div className="form-group">
-          <label htmlFor="format">Format</label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="mb-4">
+          <label htmlFor="format" className="block mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Format</label>
           <select
             id="format"
             value={format}
             onChange={(e) => setFormat(e.target.value)}
-            className="select-input"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-base font-inherit transition-colors focus:outline-none focus:border-black dark:focus:border-white"
             disabled={isLoading}
           >
             <option value="mp4">MP4 (Video)</option>
@@ -62,13 +62,13 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownloadStart }) =
           </select>
         </div>
         
-        <div className="form-group">
-          <label htmlFor="quality">Quality</label>
+        <div className="mb-4">
+          <label htmlFor="quality" className="block mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Quality</label>
           <select
             id="quality"
             value={quality}
             onChange={(e) => setQuality(e.target.value)}
-            className="select-input"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-base font-inherit transition-colors focus:outline-none focus:border-black dark:focus:border-white"
             disabled={isLoading}
           >
             <option value="best">Best</option>
@@ -79,9 +79,9 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownloadStart }) =
         </div>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm mb-4">{error}</div>}
       
-      <button type="submit" className="download-button" disabled={isLoading}>
+      <button type="submit" className="w-full px-6 py-3 border-none rounded-lg bg-black dark:bg-white text-white dark:text-black text-base font-semibold cursor-pointer transition-colors hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed" disabled={isLoading}>
         {isLoading ? 'Processing...' : 'Download'}
       </button>
     </form>

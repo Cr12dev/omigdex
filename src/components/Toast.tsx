@@ -35,9 +35,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="toast-container">
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         {toasts.map(toast => (
-          <div key={toast.id} className={`toast toast-${toast.type}`}>
+          <div 
+            key={toast.id} 
+            className={`px-4 py-6 rounded-lg bg-white dark:bg-gray-900 text-black dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 text-sm font-medium toast-slide-in max-w-md ${
+              toast.type === 'success' ? 'border-l-4 border-l-green-500' :
+              toast.type === 'error' ? 'border-l-4 border-l-red-500' :
+              toast.type === 'warning' ? 'border-l-4 border-l-yellow-500' :
+              'border-l-4 border-l-blue-500'
+            }`}
+          >
             {toast.message}
           </div>
         ))}

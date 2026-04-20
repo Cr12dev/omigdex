@@ -41,5 +41,5 @@ export const PlatformIcon: React.FC<PlatformIconProps> = ({ platform, size = 24 
     }
   };
 
-  return <div className="platform-icon">{renderIcon()}</div>;
+  return <div className="flex items-center justify-center flex-shrink-0">{renderIcon()}</div>;
 };

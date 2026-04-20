@@ -6,6 +6,7 @@ import { DownloadForm } from './components/DownloadForm';
 import { DownloadQueue } from './components/DownloadQueue';
 import { DownloadHistory } from './components/DownloadHistory';
 import './App.css';
+import { Button } from './components/ui/button';
 
 interface DownloadInfo {
   id: string;
@@ -112,26 +113,29 @@ function AppContent() {
   };
 
   return (
-    <div className={`app ${theme}`}>
-      <header className="app-header">
-        <h1>Omigdex</h1>
-        <button onClick={toggleTheme} className="theme-toggle">
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <header className="flex justify-between items-center px-8 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h1 className="text-2xl font-semibold">Omigdex</h1>
+        <button 
+          onClick={toggleTheme} 
+          className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer text-sm font-medium transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
           {theme === 'light' ? 'Dark' : 'Light'}
         </button>
       </header>
 
-      <main className="app-main">
+      <main className="flex-1 p-8 max-w-4xl mx-auto w-full">
         <DownloadForm onDownloadStart={handleDownloadStart} />
 
-        <div className="tabs">
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
-            className={`tab ${activeTab === 'queue' ? 'active' : ''}`}
+            className={`px-6 py-3 border-none bg-none text-sm font-medium cursor-pointer border-b-2 transition-all ${activeTab === 'queue' ? 'text-black dark:text-white border-black dark:border-white' : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-black dark:hover:text-white'}`}
             onClick={() => setActiveTab('queue')}
           >
             Queue ({downloads.filter(d => d.status !== 'completed' && d.status !== 'failed' && d.status !== 'cancelled').length})
           </button>
           <button
-            className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+            className={`px-6 py-3 border-none bg-none text-sm font-medium cursor-pointer border-b-2 transition-all ${activeTab === 'history' ? 'text-black dark:text-white border-black dark:border-white' : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-black dark:hover:text-white'}`}
             onClick={() => setActiveTab('history')}
           >
             History ({history.length})
@@ -150,6 +154,16 @@ function AppContent() {
             onRefresh={handleRefreshHistory}
           />
         )}
+        <div className="mt-8">
+          <div className="flex justify-center items-center py-4">
+            <Button variant="outline"><a href="https://github.com/Cr12dev/omigdex" target="_blank">Github</a></Button>
+          </div>
+          <div className="flex justify-center items-center py-4">
+            <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
+              © 2025 Omigdex. All rights reserved.
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
