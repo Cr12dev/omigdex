@@ -123,25 +123,25 @@ fn clear_history(state: tauri::State<'_, Arc<Mutex<DownloadHistory>>>) -> Result
 
 #[tauri::command]
 fn get_plugins(state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Vec<String> {
-    let pm = state.lock().unwrap();
+    let pm = state.inner().lock().unwrap();
     pm.get_plugin_list()
 }
 
 #[tauri::command]
 fn reload_plugins(state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Result<(), String> {
-    let pm = state.lock().unwrap();
+    let pm = state.inner().lock().unwrap();
     pm.load_plugins().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn enable_plugin(name: String, state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Result<(), String> {
-    let pm = state.lock().unwrap();
+    let pm = state.inner().lock().unwrap();
     pm.enable_plugin(&name).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn disable_plugin(name: String, state: tauri::State<'_, Arc<Mutex<PluginManager>>>) -> Result<(), String> {
-    let pm = state.lock().unwrap();
+    let pm = state.inner().lock().unwrap();
     pm.disable_plugin(&name).map_err(|e| e.to_string())
 }
 

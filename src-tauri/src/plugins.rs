@@ -1,8 +1,8 @@
-use mlua::{Lua, Function, Table, Value};
+use mlua::{Lua, Function};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use crate::types::{DownloadInfo, DownloadRequest, VideoFormat, VideoQuality};
+use crate::types::DownloadInfo;
 use crate::downloader::Downloader;
 use crate::queue::DownloadQueue;
 use crate::history::DownloadHistory;
@@ -22,17 +22,18 @@ pub enum PluginError {
     LuaError(#[from] mlua::Error),
 }
 
-pub struct Plugin {
+#[derive(Clone)]
+pub struct PluginMetadata {
     name: String,
-    lua: Lua,
+    path: PathBuf,
     enabled: bool,
 }
 
-impl Plugin {
-    pub fn new(name: String, lua: Lua) -> Self {
+impl PluginMetadata {
+    pub fn new(name: String, path: PathBuf) -> Self {
         Self {
             name,
-            lua,
+            path,
             enabled: true,
         }
     }
@@ -48,10 +49,14 @@ impl Plugin {
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
+
+    pub fn path(&self) -> &PathBuf {
+        &self.path
+    }
 }
 
 pub struct PluginManager {
-    plugins: Arc<Mutex<Vec<Plugin>>>,
+    plugins: Arc<Mutex<Vec<PluginMetadata>>>,
     downloader: Arc<Mutex<Downloader>>,
     queue: Arc<Mutex<DownloadQueue>>,
     history: Arc<Mutex<DownloadHistory>>,
@@ -98,43 +103,31 @@ impl PluginManager {
                     .unwrap_or("unknown")
                     .to_string();
 
-                match self.load_plugin(&path) {
-                    Ok(plugin) => {
-                        println!("Loaded plugin: {}", plugin_name);
-                        plugins.push(plugin);
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to load plugin {}: {}", plugin_name, e);
-                    }
-                }
+                let metadata = PluginMetadata::new(plugin_name.clone(), path.clone());
+                println!("Discovered plugin: {}", plugin_name);
+                plugins.push(metadata);
             }
         }
 
         Ok(())
     }
 
-    fn load_plugin(&self, path: &PathBuf) -> Result<Plugin, PluginError> {
+    fn load_lua_instance(&self, metadata: &PluginMetadata) -> Result<Lua, PluginError> {
         let lua = Lua::new();
 
         // Expose API functions to Lua
         self.expose_api(&lua)?;
 
         // Load the plugin file
-        let plugin_code = fs::read_to_string(path)?;
+        let plugin_code = fs::read_to_string(metadata.path())?;
         lua.load(&plugin_code).exec()?;
 
         // Call plugin init if exists
         if let Ok(init) = lua.globals().get::<Function>("init") {
-            init.call::<_, ()>(())?;
+            init.call::<()>(())?;
         }
 
-        Ok(Plugin::new(
-            path.file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("unknown")
-                .to_string(),
-            lua,
-        ))
+        Ok(lua)
     }
 
     fn expose_api(&self, lua: &Lua) -> Result<(), PluginError> {
@@ -157,7 +150,7 @@ impl PluginManager {
                 Ok((title, platform)) => {
                     let result = lua.create_table()?;
                     result.set("title", title)?;
-                    result.set("platform", platform.to_lowercase())?;
+                    result.set("platform", format!("{:?}", platform).to_lowercase())?;
                     Ok(result)
                 }
                 Err(e) => Err(mlua::Error::RuntimeError(e.to_string())),
@@ -184,9 +177,9 @@ impl PluginManager {
             let result = lua.create_table()?;
             for (i, download) in downloads.iter().enumerate() {
                 let dl_table = lua.create_table()?;
-                dl_table.set("id", &download.id)?;
-                dl_table.set("url", &download.url)?;
-                dl_table.set("title", &download.title)?;
+                dl_table.set("id", download.id.clone())?;
+                dl_table.set("url", download.url.clone())?;
+                dl_table.set("title", download.title.clone())?;
                 dl_table.set("platform", format!("{:?}", download.platform).to_lowercase())?;
                 dl_table.set("format", format!("{:?}", download.format).to_lowercase())?;
                 dl_table.set("status", format!("{:?}", download.status).to_lowercase())?;
@@ -214,16 +207,23 @@ impl PluginManager {
     pub fn trigger_event(&self, event: &str, data: serde_json::Value) -> Result<(), PluginError> {
         let plugins = self.plugins.lock().unwrap();
 
-        for plugin in plugins.iter() {
-            if !plugin.is_enabled() {
+        for metadata in plugins.iter() {
+            if !metadata.is_enabled() {
                 continue;
             }
 
-            let lua = &plugin.lua;
-            if let Ok(handler) = lua.globals().get::<Function>(event) {
-                let data_str = serde_json::to_string(&data).unwrap_or_default();
-                if let Err(e) = handler.call::<_, ()>(data_str) {
-                    eprintln!("Plugin {} event {} error: {}", plugin.name(), event, e);
+            // Load Lua instance on-demand for this event
+            match self.load_lua_instance(metadata) {
+                Ok(lua) => {
+                    if let Ok(handler) = lua.globals().get::<Function>(event) {
+                        let data_str = serde_json::to_string(&data).unwrap_or_default();
+                        if let Err(e) = handler.call::<()>(data_str) {
+                            eprintln!("Plugin {} event {} error: {}", metadata.name(), event, e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to load plugin {} for event {}: {}", metadata.name(), event, e);
                 }
             }
         }
