@@ -7,6 +7,7 @@ import { DownloadQueue } from './components/DownloadQueue';
 import { DownloadHistory } from './components/DownloadHistory';
 import './App.css';
 import { Button } from './components/ui/button';
+import { Checkbox } from './components/ui/checkbox';
 
 interface DownloadInfo {
   id: string;
@@ -27,6 +28,8 @@ function AppContent() {
   const [downloads, setDownloads] = useState<DownloadInfo[]>([]);
   const [history, setHistory] = useState<DownloadInfo[]>([]);
   const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue');
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
+  const [previousDownloads, setPreviousDownloads] = useState<DownloadInfo[]>([]);
 
   useEffect(() => {
     loadDownloads();
@@ -38,6 +41,20 @@ function AppContent() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Detectar cuando una descarga se completa
+    downloads.forEach(download => {
+      const prevDownload = previousDownloads.find(d => d.id === download.id);
+      if (prevDownload && prevDownload.status !== 'completed' && download.status === 'completed' && autoPlayEnabled && download.file_path) {
+        invoke('open_file', { filePath: download.file_path }).catch(err => {
+          console.error('Failed to open file:', err);
+          showToast('Failed to open file', 'error');
+        });
+      }
+    });
+    setPreviousDownloads(downloads);
+  }, [downloads, autoPlayEnabled]);
 
   const loadDownloads = async () => {
     try {
@@ -126,6 +143,19 @@ function AppContent() {
 
       <main className="flex-1 p-8 max-w-4xl mx-auto w-full">
         <DownloadForm onDownloadStart={handleDownloadStart} />
+        <div className="flex items-center space-x-2 mb-4">
+          <Checkbox
+            id="autoplay"
+            checked={autoPlayEnabled}
+            onCheckedChange={(checked) => setAutoPlayEnabled(checked === true)}
+          />
+          <label
+            htmlFor="autoplay"
+            className="text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer"
+          >
+            Auto-play video after download
+          </label>
+        </div>
 
         <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button

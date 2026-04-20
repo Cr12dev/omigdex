@@ -117,6 +117,13 @@ fn clear_history(state: tauri::State<'_, Arc<Mutex<DownloadHistory>>>) -> Result
         .map_err(|e| e.to_string())
 }
 
+// Actualmente se trabaja en esto
+#[tauri::command]
+fn open_file(file_path: String) -> Result<(), String> {
+    opener::open(file_path)
+        .map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let queue = Arc::new(Mutex::new(DownloadQueue::new("./downloads".to_string(), 3)));
@@ -140,7 +147,8 @@ pub fn run() {
             get_history,
             add_to_history,
             remove_from_history,
-            clear_history
+            clear_history,
+            open_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
