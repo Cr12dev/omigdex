@@ -36,6 +36,7 @@ async fn download_video(
     url: String,
     format: String,
     quality: String,
+    gpu_acceleration: bool,
     state: tauri::State<'_, Arc<Mutex<DownloadQueue>>>,
 ) -> Result<String, String> {
     let video_format = match format.to_lowercase().as_str() {
@@ -56,12 +57,13 @@ async fn download_video(
         url,
         format: video_format,
         quality: video_quality,
+        gpu_acceleration,
     };
 
     let queue = state.lock().unwrap();
     let id = queue.add_download(request)
         .map_err(|e| e.to_string())?;
-    
+
     Ok(id)
 }
 

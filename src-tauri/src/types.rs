@@ -7,6 +7,7 @@ pub struct DownloadRequest {
     pub url: String,
     pub format: VideoFormat,
     pub quality: VideoQuality,
+    pub gpu_acceleration: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

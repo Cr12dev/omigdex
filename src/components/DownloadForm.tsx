@@ -2,30 +2,31 @@ import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
 interface DownloadFormProps {
-  onDownloadStart: (url: string, format: string, quality: string) => void;
+  onDownloadStart: (url: string, format: string, quality: string, gpuAcceleration: boolean) => void;
 }
 
 export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownloadStart }) => {
   const [url, setUrl] = useState('');
   const [format, setFormat] = useState('mp4');
   const [quality, setQuality] = useState('high');
+  const [gpuAcceleration, setGpuAcceleration] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!url.trim()) {
       setError('Please enter a URL');
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       await invoke('check_yt_dlp');
-      onDownloadStart(url, format, quality);
+      onDownloadStart(url, format, quality, gpuAcceleration);
       setUrl('');
     } catch (err) {
       setError('yt-dlp is not installed. Please install it from https://github.com/yt-dlp/yt-dlp');
@@ -61,7 +62,7 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownloadStart }) =
             <option value="mp3">MP3 (Audio)</option>
           </select>
         </div>
-        
+
         <div className="mb-4">
           <label htmlFor="quality" className="block mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Quality</label>
           <select
@@ -77,6 +78,21 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownloadStart }) =
             <option value="low">Low</option>
           </select>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="flex items-center space-x-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={gpuAcceleration}
+            onChange={(e) => setGpuAcceleration(e.target.checked)}
+            disabled={isLoading || format === 'mp3'}
+            className="w-4 h-4 border border-gray-300 rounded bg-gray-50 dark:bg-gray-800 text-black dark:text-white focus:ring-black dark:focus:ring-white"
+          />
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            GPU Acceleration (faster downloads, MP4 only)
+          </span>
+        </label>
       </div>
 
       {error && <div className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm mb-4">{error}</div>}
