@@ -158,11 +158,6 @@ function AppContent() {
           <div className="flex justify-center items-center py-4">
             <Button variant="outline"><a href="https://github.com/Cr12dev/omigdex" target="_blank">Github</a></Button>
           </div>
-          <div className="flex justify-center items-center py-4">
-            <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
-              © 2025 Omigdex. All rights reserved.
-            </div>
-          </div>
         </div>
       </main>
     </div>
