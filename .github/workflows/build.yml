@@ -4,7 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - snapshot-*
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag version'
+        required: true
 
 permissions:
   contents: write
