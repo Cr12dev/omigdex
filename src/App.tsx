@@ -7,6 +7,8 @@ import { DownloadQueue } from './components/DownloadQueue';
 import { DownloadHistory } from './components/DownloadHistory';
 import './App.css';
 import { Button } from './components/ui/button';
+import { FaFire } from 'react-icons/fa';
+
 
 interface DownloadInfo {
   id: string;
@@ -116,6 +118,12 @@ function AppContent() {
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       <header className="flex justify-between items-center px-8 py-4 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-2xl font-semibold">Omigdex</h1>
+        <div className="relative inline-block p-[2px] rounded-lg bg-gradient-to-r from-orange-400 to-orange-600">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+            <FaFire className="text-orange-500" />
+            <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Hot</span>
+          </button>
+        </div>
         <button 
           onClick={toggleTheme} 
           className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer text-sm font-medium transition-all hover:bg-gray-100 dark:hover:bg-gray-800"

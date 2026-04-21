@@ -53,6 +53,30 @@
   .toast-slide-in {
     animation: slideIn 0.3s ease;
   }
+
+  .border-gradient-orange {
+    position: relative;
+    background: white;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+
+  .border-gradient-orange::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: -2px;
+    border-radius: inherit;
+    background: linear-gradient(to right, #fb923c, #ea580c);
+    z-index: -1;
+  }
+
+  .dark .border-gradient-orange {
+    background: #1f2937;
+  }
 }
 
 @keyframes slideIn {
