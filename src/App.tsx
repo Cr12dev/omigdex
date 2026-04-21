@@ -8,6 +8,7 @@ import { DownloadHistory } from './components/DownloadHistory';
 import './App.css';
 import { Button } from './components/ui/button';
 import { FaFire, FaHome } from 'react-icons/fa';
+import { CardImage } from './components/CardImage';
 
 
 interface DownloadInfo {
@@ -23,6 +24,21 @@ interface DownloadInfo {
   created_at: string;
 }
 
+interface YouTubeVideo {
+  id: {
+    videoId: string;
+  };
+  snippet: {
+    title: string;
+    description: string;
+    thumbnails: {
+      default: { url: string };
+      medium: { url: string };
+      high: { url: string };
+    };
+  };
+}
+
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const { showToast } = useToast();
@@ -31,7 +47,55 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue');
   const [activeView, setActiveView] = useState<'home' | 'hot'>('home');
 
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [loadingVideos, setLoadingVideos] = useState(true);
+
+  const API_KEY = import.meta.env.VITE_YT_API_KEY;
+
   useEffect(() => {
+
+    async function getViralVideos() {
+      console.log('API Key:', API_KEY);
+      if (!API_KEY) {
+        console.error('API Key is missing');
+        setLoadingVideos(false);
+        return;
+      }
+
+      const now = new Date();
+      const yesterday = new Date(now.getTime() -24 * 60 * 60 * 1000);
+
+      const publishedAfter = yesterday.toISOString();
+
+      try {
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=viewCount&publishedAfter=${publishedAfter}&maxResults=10&key=${API_KEY}`);
+
+        if (!res.ok) {
+          console.error('API request failed:', res.status, res.statusText);
+          const errorText = await res.text();
+          console.error('Error response:', errorText);
+          setLoadingVideos(false);
+          return;
+        }
+
+        const data = await res.json();
+        console.log('API response:', data);
+
+        if (data.items) {
+          setVideos(data.items);
+          console.log('Videos set:', data.items);
+        } else {
+          console.error('No items in API response:', data);
+        }
+        setLoadingVideos(false);
+      } catch (error) {
+        console.error('Error fetching viral videos:', error);
+        setLoadingVideos(false);
+      }
+    }
+
+    getViralVideos();
+
     loadDownloads();
     loadHistory();
     
@@ -115,6 +179,8 @@ function AppContent() {
     showToast('History refreshed', 'info');
   };
 
+  console.log('Render - activeView:', activeView, 'videos:', videos, 'loadingVideos:', loadingVideos);
+
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       <header className="flex justify-between items-center px-8 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -123,7 +189,7 @@ function AppContent() {
           <div className="relative inline-block p-[2px] rounded-lg bg-gradient-to-r from-orange-400 to-orange-600">
             <button onClick={() => setActiveView('hot')} className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
               <FaFire className="text-orange-500" />
-              <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Hot</span>
+              <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Viral</span>
             </button>
           </div>
           <button onClick={() => setActiveView('home')} className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-white dark:bg-gray-900 border-2 border-black dark:border-white text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
@@ -177,7 +243,30 @@ function AppContent() {
               </div>
             </div>
           </>
-        ) : null}
+        ) : (
+          <div className="flex-1 p-8 max-w-4xl mx-auto w-full">
+            <h1 className="text-3xl font-bold mb-4">Latest Viral Videos</h1>
+            {loadingVideos ? (
+              <p>Loading...</p>
+            ) : videos.length === 0 ? (
+              <p>No videos found</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {videos.map((video) => (
+                  <div key={video.id.videoId}>
+                    <CardImage
+                      title={video.snippet.title}
+                      description={video.snippet.description || ''}
+                      image={video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium?.url || video.snippet.thumbnails.default?.url}
+                      link={`https://www.youtube.com/watch?v=${video.id.videoId}`}
+                      social='youtube'
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
